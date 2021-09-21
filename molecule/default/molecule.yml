@@ -21,7 +21,7 @@ platforms:
       http_proxy: "${http_proxy}"
       https_proxy: "${https_proxy}"
       no_proxy: "${no_proxy}"
-      base_image: "registry-testing.kazan.atosworldline.com/sandbox/c8foransible:latest"
+      base_image: "url/sandbox/c8foransible:latest"
   - name: "centos7"
     image: "role/${ROLE_NAME}/${MOLECULE_SCENARIO_NAME}:centos7"
     pre_build_image: false
@@ -33,7 +33,7 @@ platforms:
       http_proxy: "${http_proxy}"
       https_proxy: "${https_proxy}"
       no_proxy: "${no_proxy}"
-      base_image: "registry-testing.kazan.atosworldline.com/sandbox/c7foransible:latest"
+      base_image: "url/sandbox/c7foransible:latest"
       CHEF_LICENSE: accept-no-persist
 provisioner:
   name: ansible

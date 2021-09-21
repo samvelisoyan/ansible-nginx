@@ -11,5 +11,5 @@ ENV {{ var }} {{ value }}
 {% endif %}
 
 {% if 'redhat' in item.name %}
-RUN sed -i 's#proxy=http://proxy-prod-scl.svc.meshcore.net:3128##g' /etc/dnf/dnf.conf
+RUN sed -i 's#proxy=url' /etc/dnf/dnf.conf
 {% endif %}

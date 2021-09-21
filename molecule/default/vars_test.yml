@@ -91,27 +91,3 @@ nginx_vhosts:
         type: 'web'
         root: '/usr/share/nginx/html'
         proxy_http_version: '1.1'
-        
-# Example vhost below, showing all available options:
-# - listen: "80" # default: "80"
-#   server_name: "example.com" # default: N/A
-#   root: "/var/www/example.com" # default: N/A
-#   index: "index.html index.htm" # default: "index.html index.htm"
-#   filename: "example.com.conf" # Can be used to set the vhost filename.
-#
-#   # Properties that are only added if defined:
-#   server_name_redirect: "www.example.com" # default: N/A
-#   error_page: ""
-#   access_log: ""
-#   error_log: ""
-#   extra_parameters: "" # Can be used to add extra config blocks (multiline).
-#   template: "" # Can be used to override the `nginx_vhost_template` per host.
-#   state: "absent" # To remove the vhost configuration.
-
-# systemd service can be managed servicetools through (require servicetools role dependency)
-nginx_disable_service_managed_by_servicetools: true
-
-# disabling service is started on change
-nginx_disable_auto_started_by_servicetools: false
-nginx_servicetools_customer: nginx
-nginx_servicetools_service_name: nginx
