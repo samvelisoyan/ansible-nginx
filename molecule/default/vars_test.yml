@@ -1,0 +1,117 @@
+---
+nginx_disable_install: false
+nginx_create_config: true
+nginx_version: ""
+nginx_branch: mainline
+nginx_modules: []
+nginx_enabled_on_boot: true
+nginx_user: "nginx"
+nginx_error_log: "/var/log/nginx/error.log warn"
+nginx_access_log: "/var/log/nginx/access.log main buffer=16k flush=2m"
+nginx_worker_processes: "auto"
+nginx_worker_connections: "1024"
+nginx_multi_accept: "off"
+
+nginx_extra_conf_options: ""
+# Example extra main options, used within the main nginx's context:
+#   nginx_extra_conf_options: |
+#     env VARIABLE;
+#     include /etc/nginx/main.d/*.conf;
+
+nginx_extra_http_options: ""
+# Example extra http options, printed inside the main server http config:
+#    nginx_extra_http_options: |
+#      proxy_buffering    off;
+#      proxy_set_header   X-Real-IP $remote_addr;
+#      proxy_set_header   X-Scheme $scheme;
+#      proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+#      proxy_set_header   Host $http_host;
+
+nginx_server_names_hash_bucket_size: "64"
+nginx_client_max_body_size: "64m"
+
+nginx_sendfile: "on"
+nginx_tcp_nopush: "on"
+nginx_tcp_nodelay: "on"
+
+nginx_keepalive_timeout: "65"
+nginx_keepalive_requests: "100"
+
+nginx_server_tokens: "on"
+nginx_proxy_cache_path: ""
+nginx_enable_gzip: false
+
+nginx_log_format: |-
+  '$remote_addr - $remote_user [$time_local] "$request" '
+  '$status $body_bytes_sent "$http_referer" '
+  '"$http_user_agent" "$http_x_forwarded_for"'
+
+nginx_upstreams:
+  - name: myupstream
+    servers:
+      - "google.com"
+      - "amazon.com weight=3"
+
+nginx_conf_path: /etc/nginx/conf.d
+nginx_vhost_path: /etc/nginx/conf.d
+nginx_remove_default_vhost: true
+
+nginx_listen_ipv6: false
+
+nginx_vhosts:
+  - filename: vhost1.conf
+    redirect: true
+    redirect_server_name: redirectvhost1test
+    scheme: http
+    server_name: vhost1test
+    headers:
+      - 'X-Frame-Options DENY'
+    locations:
+      - location: '/'
+        type: 'proxy'
+        proxy_pass: http://myupstream/
+        proxy_http_version: '1.1'
+        enable_proxy_redirect: false
+        proxy_headers:
+          - 'Upgrade $http_upgrade'
+          - 'Connection "upgrade"'
+          - 'Host $http_host'
+          - 'X-Real-IP $remote_addr'
+          - 'X-Forwarded-For $proxy_add_x_forwarded_for'
+          - 'X-Forward-Proto http'
+          - 'X-Nginx-Proxy true'
+  - filename: vhost2.conf
+    redirect: false
+    scheme: http
+    server_name: vhost2test
+    headers:
+      - 'X-Frame-Options DENY'
+    locations:
+      - location: '/web'
+        type: 'web'
+        root: '/usr/share/nginx/html'
+        proxy_http_version: '1.1'
+        
+# Example vhost below, showing all available options:
+# - listen: "80" # default: "80"
+#   server_name: "example.com" # default: N/A
+#   root: "/var/www/example.com" # default: N/A
+#   index: "index.html index.htm" # default: "index.html index.htm"
+#   filename: "example.com.conf" # Can be used to set the vhost filename.
+#
+#   # Properties that are only added if defined:
+#   server_name_redirect: "www.example.com" # default: N/A
+#   error_page: ""
+#   access_log: ""
+#   error_log: ""
+#   extra_parameters: "" # Can be used to add extra config blocks (multiline).
+#   template: "" # Can be used to override the `nginx_vhost_template` per host.
+#   state: "absent" # To remove the vhost configuration.
+
+# systemd service can be managed servicetools through (require servicetools role dependency)
+nginx_disable_service_managed_by_servicetools: true
+
+# disabling service is started on change
+nginx_disable_auto_started_by_servicetools: false
+nginx_servicetools_customer: nginx
+nginx_servicetools_service_name: nginx

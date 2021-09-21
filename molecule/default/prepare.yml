@@ -1,0 +1,9 @@
+---
+
+- name: Prepare
+  hosts: all
+  gather_facts: no
+  roles:
+    - users
+  vars:
+    proxy_host: ''

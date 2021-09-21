@@ -1,0 +1,22 @@
+---
+- name: set nginx pakage
+  set_fact:
+    nginx_package: "nginx{{ nginx_version | default('') }}"
+
+- name: Gather package facts
+  package_facts:
+    manager: auto
+
+- name: Ensure that nginx pakage not instaled
+  set_fact:
+    nginx_instaled: false
+  when: nginx_package not in ansible_facts.packages
+
+- name: Ensure that nginx pakage instaled
+  set_fact:
+    nginx_instaled: true
+  when: nginx_package in ansible_facts.packages
+
+- name: Set systemd user service script
+  set_fact:
+    sysd_script: "{{ sysd_user_services_folder }}/nginx.service"

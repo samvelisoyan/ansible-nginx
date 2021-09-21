@@ -1,0 +1,33 @@
+---
+- name: Install dependencies
+  action: >
+    {{ ansible_pkg_mgr }} name="{{ nginx_dependencies }}" state=present enablerepo={{ nginx_enablerepo | default(omit,true) }}
+  when:
+    - not nginx_disable_install
+
+- name: Add NGINX signing key
+  rpm_key:
+    key: https://nginx.org/keys/nginx_signing.key
+    state: present
+
+- name: Add nginx repository
+  template:
+    force: yes
+    src: nginx.repo.j2
+    dest: /etc/yum.repos.d/nginx.repo
+    mode: 0644
+
+- name: Install nginx
+  action: >
+    {{ ansible_pkg_mgr }} name={{ nginx_package }} state=present enablerepo={{ nginx_enablerepo | default(omit,true) }}
+  when:
+    - not nginx_disable_install
+
+- name: User variable must be defined in Service section systemd file
+  lineinfile:
+    path: "{{ sysd_script }}"
+    regexp: '^User=ngnix'
+    insertafter: '\[Service\]'
+    line: 'User=root'
+  when:
+    - not nginx_disable_install

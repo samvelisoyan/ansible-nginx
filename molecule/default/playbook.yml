@@ -1,0 +1,8 @@
+---
+- name: Converge
+  hosts: all
+  become: no
+  vars_files:
+    - vars_test.yml
+  roles:
+    - role: nginx

@@ -1,0 +1,19 @@
+---
+- name: (CentOS) Install GeoIP dependencies
+  action: >
+    {{ ansible_pkg_mgr }} name='epel-release' state=present enablerepo={{ nginx_enablerepo | default(omit,true) }}
+  when:
+    - ansible_facts['distribution'] == "CentOS"
+    - '"geoip" in nginx_modules'
+
+- name: Install NGINX modules
+  action: >
+    {{ ansible_pkg_mgr }} name="nginx-module-{{ item.name | default(item) }}\
+    {{ item.version | default(nginx_version) | default('') }}" state=present enablerepo={{ nginx_enablerepo | default(omit,true) }}
+  loop: "{{ nginx_modules }}"
+  when:
+    - (item.name | default(item) in nginx_modules_list)
+    - not (item.name | default(item) == "geoip")
+      or not ((ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] is version('8', '=='))
+    - not (item.name | default(item) == "brotli")
+      or (ansible_facts['os_family'] == "RedHat" and ansible_facts['distribution_major_version'] is version('8', '<'))

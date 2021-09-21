@@ -1,0 +1,27 @@
+---
+- name: Checking vars tasks
+  import_tasks: check-vars.yml
+
+- name: Include setup tasks (requires user with root rights in order to run)
+  include: setup.yml
+  when:
+    - not nginx_disable_install
+    - not ansible_check_mode
+
+- include: config.yml
+  when:
+    - nginx_create_config | bool
+
+- include: modules.yml
+  when:
+    - not ansible_check_mode
+    - not nginx_disable_install
+
+- name: Ensure nginx is started and enabled at boot.
+  service:
+    name: nginx
+    state: started
+    enabled: "{{ nginx_enabled_on_boot }}"
+  when:
+    - not ansible_check_mode
+    - not nginx_disable_install

@@ -1,0 +1,82 @@
+---
+# This is an example playbook to execute inspec tests.
+# Tests need distributed to the appropriate ansible host/groups
+# prior to execution by `inspec exec`.
+
+- name: Verify
+  hosts: all
+  become: no
+  gather_facts: no
+  vars:
+    inspec_bin: /usr/bin/awlspector
+    inspec_test_directory: /tmp/molecule/inspec
+  vars_files:
+    - vars_test.yml
+  tasks:
+    - name: Create Molecule directory for test files
+      file:
+        path: "{{ inspec_test_directory }}"
+        state: directory
+
+    - name: get all tests
+      set_fact:
+        tests_default:
+          - "{{ lookup('env', 'MOLECULE_VERIFIER_TEST_DIRECTORY') }}/test_*.rb"
+        tests_servicetools: 
+          - "{{ lookup('env', 'MOLECULE_VERIFIER_TEST_DIRECTORY') }}/servicetools_*.rb"
+
+    - name: check if servicetools included
+      set_fact:
+        tests_final: "{{ tests_default + tests_servicetools }}"
+      when:
+        - not nginx_disable_service_managed_by_servicetools
+
+    - name: check if servicetools included
+      set_fact:
+        tests_final: "{{ tests_default }}"
+      when:
+        - nginx_disable_service_managed_by_servicetools
+
+    - name: Copy Inspec tests to remote
+      copy:
+        src: "{{ item }}"
+        dest: "{{ inspec_test_directory }}/{{ item | basename }}"
+      register: copy_inspec_tests
+      with_fileglob: "{{ tests_final }}"
+
+    - name: Execute Inspec tests
+      shell: "{{ inspec_bin }} exec {{ item.dest }} --reporter cli:{{ item.dest }}.log"
+      register: test_results
+      loop: "{{ copy_inspec_tests.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      changed_when: test_results.changed
+      ignore_errors: true
+
+    - name: Get the log report file
+      synchronize:
+        mode: pull
+        src: "{{ item.dest }}.log"
+        dest: "{{ lookup('env', 'MOLECULE_VERIFIER_TEST_DIRECTORY') }}/{{ lookup('env', 'MOLECULE_SCENARIO_NAME') }}_{{ item.invocation.module_args._original_basename }}.log"
+      loop: "{{ copy_inspec_tests.results }}"
+      loop_control:
+        label: "{{ item.dest }}"
+      ignore_errors: yes  
+
+    - name: Display result
+      vars:
+        log_file: "{{ lookup('env', 'MOLECULE_VERIFIER_TEST_DIRECTORY') }}/{{ lookup('env', 'MOLECULE_SCENARIO_NAME') }}_{{ item.invocation.module_args._original_basename }}.log"
+      debug:
+        msg: "{{ lookup('file', log_file).split('\n') }}"
+      when: lookup('env', 'CONSOLE_OUTPUT') != ""
+      loop: "{{ copy_inspec_tests.results }}"
+      loop_control:
+        label: "{{ item.dest }}"
+
+    - name: Fail when tests fail
+      fail:
+        msg: "Inspec failed to validate"
+      when: item.rc != 0
+      loop: "{{ test_results.results }}"
+      loop_control:
+        label: "{{ item.item.dest }}"

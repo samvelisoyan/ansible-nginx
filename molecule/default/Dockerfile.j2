@@ -1,0 +1,15 @@
+# Molecule managed
+
+FROM {{ item.env.base_image }}
+
+{% if item.env is defined %}
+{% for var, value in item.env.items() %}
+{% if value %}
+ENV {{ var }} {{ value }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if 'redhat' in item.name %}
+RUN sed -i 's#proxy=http://proxy-prod-scl.svc.meshcore.net:3128##g' /etc/dnf/dnf.conf
+{% endif %}

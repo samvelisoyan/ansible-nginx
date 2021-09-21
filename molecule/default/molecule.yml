@@ -1,0 +1,49 @@
+---
+dependency:
+  name: galaxy
+  options:
+    ignore-certs: true
+    ignore-errors: true
+    role-file: molecule/requirements.yml
+driver:
+  name: docker
+lint:
+  name: yamllint
+platforms:
+  - name: "redhat8"
+    image: "role/${ROLE_NAME}/${MOLECULE_SCENARIO_NAME}:redhat8"
+    pre_build_image: false
+    privileged: true
+    command: "/usr/sbin/init"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    env:
+      http_proxy: "${http_proxy}"
+      https_proxy: "${https_proxy}"
+      no_proxy: "${no_proxy}"
+      base_image: "registry-testing.kazan.atosworldline.com/sandbox/c8foransible:latest"
+  - name: "centos7"
+    image: "role/${ROLE_NAME}/${MOLECULE_SCENARIO_NAME}:centos7"
+    pre_build_image: false
+    privileged: true
+    command: "/usr/sbin/init"
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    env:
+      http_proxy: "${http_proxy}"
+      https_proxy: "${https_proxy}"
+      no_proxy: "${no_proxy}"
+      base_image: "registry-testing.kazan.atosworldline.com/sandbox/c7foransible:latest"
+      CHEF_LICENSE: accept-no-persist
+provisioner:
+  name: ansible
+  log: true
+#  options:
+#    vvv: True
+verifier:
+  name: inspec
+  lint:
+    name: rubocop
+    enabled: true
+    options:
+      except: Layout/LineLength,Metrics/BlockLength

@@ -1,0 +1,14 @@
+---
+nginx_dependencies: [
+  'ca-certificates', 'openssl',
+]
+nginx_repository: "https://nginx.org/packages/{{ (nginx_branch == 'mainline') | ternary('mainline/', '') }}\
+                                  {{ (ansible_facts['distribution'] == 'CentOS') | ternary('centos', 'rhel') }}/\
+                                  {{ ansible_facts['distribution_major_version'] }}/$basearch/"
+# Supported NGINX Open Source modules
+nginx_modules_list: [
+  'geoip', 'image-filter', 'njs', 'perl', 'xslt',
+]
+
+nginx_default_vhost_path: /etc/nginx/conf.d/default.conf
+sysd_user_services_folder: "{{ '/usr/lib/systemd/system' if (ansible_distribution in ['RedHat','CentOS']) else '/lib/systemd/system/' }}"
