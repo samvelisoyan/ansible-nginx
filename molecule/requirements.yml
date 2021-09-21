@@ -1,9 +1,1 @@
 ---
-- name: users
-  src:
-    git+https://gitlab.kazan.myworldline.com/awl-ansible/roles/system/users.git
-  version: "latest"
-- name: servicetools
-  src:
-    git+https://gitlab.kazan.myworldline.com/awl-ansible/roles/applicative/servicetools.git
-  version: "1.0.4"
